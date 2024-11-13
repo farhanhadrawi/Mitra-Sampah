@@ -35,6 +35,11 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.0.15
+  firebase_core: ^3.7.0
+  cloud_firestore: ^5.4.5
+  firebase_auth: ^5.3.2
+  firebase_storage: 12.3.5
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +70,7 @@ flutter:
     - assets/add.png
     - assets/profile.png
     - assets/gogreen.png
+    # - assets/profile_picture.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

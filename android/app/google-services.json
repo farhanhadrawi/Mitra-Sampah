@@ -1,0 +1,86 @@
+{
+  "project_info": {
+    "project_number": "1025826258995",
+    "project_id": "flutter-mobile-apps-cc909",
+    "storage_bucket": "flutter-mobile-apps-cc909.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025826258995:android:eb5bdc7ab5974da7dc2346",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_final_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWCrk1vXIaeUEWjWFhO_X1P8RRV7TPC7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025826258995:android:c7c05f9c620bb486dc2346",
+        "android_client_info": {
+          "package_name": "com.mitrasampah.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWCrk1vXIaeUEWjWFhO_X1P8RRV7TPC7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025826258995:android:3497919c8ec77202dc2346",
+        "android_client_info": {
+          "package_name": "firebase.crud.example"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWCrk1vXIaeUEWjWFhO_X1P8RRV7TPC7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025826258995:android:800d0f0ba53313eddc2346",
+        "android_client_info": {
+          "package_name": "firebase.curd.example"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWCrk1vXIaeUEWjWFhO_X1P8RRV7TPC7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

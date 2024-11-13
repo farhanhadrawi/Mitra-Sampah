@@ -1,26 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'home.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: OnboardingScreen(),
+      home: AuthenticationWrapper(),
+      theme: ThemeData(
+        useMaterial3: true,
+        primarySwatch: Colors.green, // Untuk menyesuaikan dengan AppBar hijau
+        iconTheme:
+            IconThemeData(color: Colors.black), // Pastikan warna ikon terlihat
+      ),
     );
   }
 }
 
+class AuthenticationWrapper extends StatelessWidget {
+  const AuthenticationWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Mendapatkan pengguna saat ini dari Firebase Authentication
+    User? user = FirebaseAuth.instance.currentUser;
+
+    // Jika pengguna sudah login, arahkan ke HomeScreen
+    if (user != null) {
+      return HomeScreen();
+    } else {
+      // Jika belum login, tampilkan OnboardingScreen
+      return OnboardingScreen();
+    }
+  }
+}
+
 class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
   @override
   _OnboardingScreenState createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  PageController _controller = PageController();
+  final PageController _controller = PageController();
   int _currentPage = 0;
 
   List<Map<String, String>> onboardingData = [
@@ -93,7 +128,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 15),
                     backgroundColor: Colors.green,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
@@ -102,7 +138,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     elevation: 10, // Efek bayangan untuk kedalaman
                     shadowColor: Colors.greenAccent, // Warna bayangan
                   ),
-                  child: Text(
+                  child: const Text(
                     "Get Started",
                     style: TextStyle(
                       fontSize: 14,
@@ -135,6 +171,7 @@ class OnboardingContent extends StatelessWidget {
   final String image, title, description;
 
   const OnboardingContent({
+    super.key,
     required this.image,
     required this.title,
     required this.description,
@@ -150,22 +187,21 @@ class OnboardingContent extends StatelessWidget {
           height: 300,
           width: 300,
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Text(
           description,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: Colors.grey),
+          style: const TextStyle(fontSize: 16, color: Colors.grey),
         ),
       ],
     );
   }
 }
-

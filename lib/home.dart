@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-// import 'login.dart';
-// import 'register.dart';
 import 'profile.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -15,18 +15,13 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _selectedIndex = index;
     });
-    if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ProfileScreen()),
-      );
-    }
   }
 
+  // Menambahkan halaman ProfileScreen di _widgetOptions
   static final List<Widget> _widgetOptions = <Widget>[
     HomeContent(),
-    Center(child: Text('Tambah Data (Skip for now)')),
-    Center(child: Text('Profil')),
+    const Center(child: Text('Tambah Data')),
+    ProfileScreen(), // Menampilkan halaman profil di sini
   ];
 
   @override
@@ -36,20 +31,33 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Image.asset('assets/home.png'),
+            icon: Image.asset(
+              'assets/home.png',
+              color: _selectedIndex == 0 ? Colors.white : Colors.black,
+            ),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset('assets/add.png'),
+            icon: Image.asset(
+              'assets/add.png',
+              color: _selectedIndex == 1 ? Colors.white : Colors.black,
+            ),
             label: 'Tambah Data',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset('assets/home.png'),
+            icon: Image.asset(
+              'assets/profile.png',
+              color: _selectedIndex == 2 ? Colors.white : Colors.black,
+            ),
             label: 'Profil',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.green,
+        backgroundColor: Colors.green, // Menjadikan background berwarna hijau
+        selectedItemColor:
+            Colors.white, // Warna ikon & teks yang dipilih menjadi putih
+        unselectedItemColor: const Color.fromARGB(
+            255, 0, 0, 0), // Warna ikon & teks yang tidak dipilih lebih gelap
         onTap: _onItemTapped,
       ),
     );
@@ -57,13 +65,15 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class HomeContent extends StatelessWidget {
+  const HomeContent({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Gambar utama
-        Container(
+        SizedBox(
           width: 300,
           height: 400,
           child: Image.asset(
@@ -71,59 +81,35 @@ class HomeContent extends StatelessWidget {
             fit: BoxFit.contain,
           ),
         ),
-        SizedBox(height: 50),
-
-        // Ikon kecil di bagian bawah
+        const SizedBox(height: 50),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.green, // Warna latar belakang hijau
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: IconButton(
-                icon: Image.asset(
-                    'assets/icon1.png'), // Sesuaikan dengan path ikon kecil pertama
-                iconSize: 40,
-                onPressed: () {},
-              ),
-            ),
-            SizedBox(width: 20),
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.green, // Warna latar belakang hijau
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: IconButton(
-                icon: Image.asset(
-                    'assets/icon2.png'), // Sesuaikan dengan path ikon kecil kedua
-                iconSize: 40,
-                onPressed: () {},
-              ),
-            ),
-            SizedBox(width: 20),
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.green, // Warna latar belakang hijau
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: IconButton(
-                icon: Image.asset(
-                    'assets/icon3.png'), // Sesuaikan dengan path ikon kecil ketiga
-                iconSize: 40,
-                onPressed: () {},
-              ),
-            ),
+            // Ikon kecil di bagian bawah
+            _buildIconButton(context, 'assets/icon1.png'),
+            const SizedBox(width: 20),
+            _buildIconButton(context, 'assets/icon2.png'),
+            const SizedBox(width: 20),
+            _buildIconButton(context, 'assets/icon3.png'),
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildIconButton(BuildContext context, String assetPath) {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: Colors.green,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: IconButton(
+        icon: Image.asset(assetPath),
+        iconSize: 40,
+        onPressed: () {},
+      ),
     );
   }
 }
