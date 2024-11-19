@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'login.dart';
 import 'register.dart';
+import 'home.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -66,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Profil berhasil diperbarui'),
-          backgroundColor: Colors.green,
+          backgroundColor: Color.fromARGB(255, 0, 0, 0),
           duration: Duration(seconds: 2),
         ),
       );
@@ -122,13 +123,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Logout berhasil'),
-          backgroundColor: Colors.green,
+          backgroundColor: Color.fromARGB(255, 0, 0, 0),
           duration: Duration(seconds: 2),
         ),
       );
 
+      // Arahkan ke halaman Home setelah logout
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -145,12 +147,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.green,
-        title: const Text('Profile'),
-        elevation: 0,
-        leading: null,
-      ),
+      // appBar: AppBar(
+      //   backgroundColor: Colors.green,
+      //   title: const Text('Profile'),
+      //   elevation: 0,
+      //   leading: null,
+      // ),
       body: user == null
           ? Center(
               child: Padding(
@@ -191,7 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => LoginScreen()),
+                              builder: (context) => const LoginScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -217,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => RegisterScreen()),
+                              builder: (context) => const RegisterScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(

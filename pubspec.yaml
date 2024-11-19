@@ -57,6 +57,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  uses-material-design: true
   assets:
     - assets/Group 1.png
     - assets/Group 2.png
@@ -70,6 +71,7 @@ flutter:
     - assets/add.png
     - assets/profile.png
     - assets/gogreen.png
+    - assets/arrow-left.png
     # - assets/profile_picture.png
 
   # An image asset can refer to one or more resolution-specific "variants", see

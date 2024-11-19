@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'profile.dart';
+import 'customer.dart'; // Impor halaman customer.dart
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,11 +18,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Menambahkan halaman ProfileScreen di _widgetOptions
   static final List<Widget> _widgetOptions = <Widget>[
-    HomeContent(),
-    const Center(child: Text('Tambah Data')),
-    ProfileScreen(), // Menampilkan halaman profil di sini
+    const HomeContent(),
+    const Center(
+        child: Text('Tambah Data')), // Placeholder untuk halaman Tambah Data
+    const CustomerScreen(), // Arahkan ke halaman customer
+    const ProfileScreen(), // Halaman profil
   ];
 
   @override
@@ -46,19 +48,27 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Image.asset(
-              'assets/profile.png',
+              'assets/add.png',
               color: _selectedIndex == 2 ? Colors.white : Colors.black,
+            ),
+            label: 'Pelanggan',
+          ),
+          BottomNavigationBarItem(
+            icon: Image.asset(
+              'assets/profile.png',
+              color: _selectedIndex == 3 ? Colors.white : Colors.black,
             ),
             label: 'Profil',
           ),
         ],
         currentIndex: _selectedIndex,
-        backgroundColor: Colors.green, // Menjadikan background berwarna hijau
-        selectedItemColor:
-            Colors.white, // Warna ikon & teks yang dipilih menjadi putih
-        unselectedItemColor: const Color.fromARGB(
-            255, 0, 0, 0), // Warna ikon & teks yang tidak dipilih lebih gelap
+        backgroundColor: Colors.green, // Background hijau
+        selectedItemColor: Colors.white, // Warna ikon yang dipilih putih
+        unselectedItemColor:
+            Colors.black, // Warna ikon yang tidak dipilih hitam
         onTap: _onItemTapped,
+        type: BottomNavigationBarType
+            .fixed, // Untuk mengatur ikon tetap pada posisi
       ),
     );
   }
@@ -72,12 +82,11 @@ class HomeContent extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Gambar utama
         SizedBox(
           width: 300,
           height: 400,
           child: Image.asset(
-            'assets/image1.png', // Sesuaikan dengan path gambar utama
+            'assets/image1.png',
             fit: BoxFit.contain,
           ),
         ),
@@ -85,7 +94,6 @@ class HomeContent extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Ikon kecil di bagian bawah
             _buildIconButton(context, 'assets/icon1.png'),
             const SizedBox(width: 20),
             _buildIconButton(context, 'assets/icon2.png'),

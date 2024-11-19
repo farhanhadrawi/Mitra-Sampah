@@ -1,3 +1,4 @@
+// farhan9@gmail.com
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'home.dart';
@@ -30,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Navigasi ke HomeScreen
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } catch (e) {
       setState(() {
@@ -48,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.green,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
           },

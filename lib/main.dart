@@ -9,7 +9,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -18,12 +18,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: AuthenticationWrapper(),
+      home: const AuthenticationWrapper(),
       theme: ThemeData(
         useMaterial3: true,
         primarySwatch: Colors.green, // Untuk menyesuaikan dengan AppBar hijau
         iconTheme:
-            IconThemeData(color: Colors.black), // Pastikan warna ikon terlihat
+            const IconThemeData(color: Colors.black), // Pastikan warna ikon terlihat
       ),
     );
   }
@@ -39,10 +39,10 @@ class AuthenticationWrapper extends StatelessWidget {
 
     // Jika pengguna sudah login, arahkan ke HomeScreen
     if (user != null) {
-      return HomeScreen();
+      return const HomeScreen();
     } else {
       // Jika belum login, tampilkan OnboardingScreen
-      return OnboardingScreen();
+      return const OnboardingScreen();
     }
   }
 }
@@ -124,7 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()),
+                      MaterialPageRoute(builder: (context) => const HomeScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
