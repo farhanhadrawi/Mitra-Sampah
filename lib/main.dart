@@ -22,8 +22,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         primarySwatch: Colors.green, // Untuk menyesuaikan dengan AppBar hijau
-        iconTheme:
-            const IconThemeData(color: Colors.black), // Pastikan warna ikon terlihat
+        iconTheme: const IconThemeData(
+            color: Colors.black), // Pastikan warna ikon terlihat
       ),
     );
   }
@@ -124,7 +124,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const HomeScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => const HomeScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

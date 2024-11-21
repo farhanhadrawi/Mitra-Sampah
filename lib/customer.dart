@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'select_location_screen.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 
 class CustomerScreen extends StatefulWidget {
   const CustomerScreen({super.key});
@@ -10,6 +13,8 @@ class CustomerScreen extends StatefulWidget {
 }
 
 class _CustomerScreenState extends State<CustomerScreen> {
+  LatLng? selectedLocation; // Variabel untuk menyimpan lokasi pelanggan
+
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -26,7 +31,51 @@ class _CustomerScreenState extends State<CustomerScreen> {
   void initState() {
     super.initState();
     uid = auth.currentUser?.uid;
-    _fetchCustomers(); // Ambil data pelanggan saat init
+    _resetPaymentStatusIfNewMonth(); // Reset status pembayaran jika bulan baru
+    _fetchCustomers(); // Ambil data pelanggan
+  }
+
+  Future<void> _resetPaymentStatusIfNewMonth() async {
+    if (uid == null) return;
+
+    final now = DateTime.now();
+    final lastReset = await firestore
+        .collection('users')
+        .doc(uid)
+        .get()
+        .then((doc) => doc.data()?['lastReset']?.toDate());
+
+    // Jika belum pernah direset atau bulan telah berubah
+    if (lastReset == null ||
+        now.month != lastReset.month ||
+        now.year != lastReset.year) {
+      // Reset semua status pembayaran pelanggan
+      final batch = firestore.batch();
+      final customers = await firestore
+          .collection('users')
+          .doc(uid)
+          .collection('customers')
+          .get();
+
+      for (final customer in customers.docs) {
+        batch.update(customer.reference, {'isPaid': false});
+      }
+
+      // Perbarui waktu reset terakhir
+      batch.update(
+        firestore.collection('users').doc(uid),
+        {'lastReset': now},
+      );
+
+      await batch.commit();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Status pembayaran telah direset untuk bulan baru.')),
+      );
+
+      _fetchCustomers(); // Perbarui daftar pelanggan
+    }
   }
 
   Future<void> _fetchCustomers() async {
@@ -97,6 +146,52 @@ class _CustomerScreenState extends State<CustomerScreen> {
     }
   }
 
+  void _showPaymentHistoryDialog(QueryDocumentSnapshot customer) async {
+    final history = await firestore
+        .collection('users')
+        .doc(uid)
+        .collection('customers')
+        .doc(customer.id)
+        .collection('paymentHistory')
+        .orderBy('date', descending: true)
+        .get();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Riwayat Pembayaran - ${customer['name']}'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: history.docs.length,
+              itemBuilder: (context, index) {
+                final payment = history.docs[index];
+                final date = payment['date'].toDate();
+                final amount = payment['amount'] ?? 0;
+                return ListTile(
+                  title: Text(
+                    'Tanggal: ${date.day}-${date.month}-${date.year}',
+                  ),
+                  subtitle: Text('Jumlah: Rp${amount.toString()}'),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Tutup'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   bool _isHovered = false; // Status hover untuk animasi
 
   void _showAddCustomerDialog() {
@@ -157,6 +252,30 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     TextField(
                       controller: locationController,
                       decoration: const InputDecoration(labelText: 'Lokasi'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SelectLocationScreen(
+                              initialLocation: selectedLocation,
+                              onLocationSelected: (location) {
+                                setState(() {
+                                  selectedLocation =
+                                      location; // Simpan lokasi yang dipilih
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        selectedLocation == null
+                            ? "Pilih Lokasi di Peta"
+                            : "Lat: ${selectedLocation!.latitude}, Lng: ${selectedLocation!.longitude}",
+                        style: const TextStyle(color: Colors.green),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     TextField(
@@ -328,6 +447,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
   Future<void> _togglePaymentStatus(String customerId, bool newStatus) async {
     try {
+      final now = DateTime.now();
+
+      // Perbarui status pembayaran
       await firestore
           .collection('users')
           .doc(uid)
@@ -335,11 +457,25 @@ class _CustomerScreenState extends State<CustomerScreen> {
           .doc(customerId)
           .update({'isPaid': newStatus});
 
+      // Jika pelanggan sudah membayar, tambahkan ke riwayat
+      if (newStatus) {
+        await firestore
+            .collection('users')
+            .doc(uid)
+            .collection('customers')
+            .doc(customerId)
+            .collection('paymentHistory')
+            .add({
+          'date': now,
+          'amount': 30000, // Menyimpan jumlah pembayaran Rp30.000
+        });
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             newStatus
-                ? 'Pelanggan telah membayar'
+                ? 'Pelanggan telah membayar Rp30.000'
                 : 'Pembayaran pelanggan dibatalkan',
           ),
           backgroundColor: newStatus ? Colors.green : Colors.red,
@@ -463,9 +599,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
           FloatingActionButtonLocation.endFloat, // Posisi tombol di kanan bawah
 
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
+            const SizedBox(height: 20),
             // Search bar
             Row(
               children: [
@@ -490,7 +627,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
               ],
             ),
 
-            const SizedBox(height: 16),
+            // const SizedBox(height: 16),
 
             // Daftar pelanggan
             Expanded(
@@ -545,6 +682,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
                                           _showEditCustomerDialog(customer);
                                         } else if (value == 'delete') {
                                           _deleteCustomer(customer.id);
+                                        } else if (value == 'history') {
+                                          _showPaymentHistoryDialog(customer);
                                         }
                                       },
                                       itemBuilder: (context) => [
@@ -555,6 +694,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
                                         const PopupMenuItem(
                                           value: 'delete',
                                           child: Text('Delete'),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'history',
+                                          child: Text('Riwayat'),
                                         ),
                                       ],
                                     ),

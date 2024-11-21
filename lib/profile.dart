@@ -147,12 +147,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: Colors.green,
-      //   title: const Text('Profile'),
-      //   elevation: 0,
-      //   leading: null,
-      // ),
       body: user == null
           ? Center(
               child: Padding(
@@ -251,14 +245,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: <Widget>[
-          const SizedBox(height: 20),
+          const SizedBox(height: 50),
           CircleAvatar(
             radius: 50,
             backgroundImage: profileImageUrl != null
                 ? NetworkImage(profileImageUrl!)
                 : const AssetImage('assets/profile_picture.png')
                     as ImageProvider,
+            child: profileImageUrl == null
+                ? const Icon(Icons.person, size: 50, color: Colors.white)
+                : null,
           ),
+
           TextButton(
             onPressed: _changeProfilePicture,
             child: const Text(
