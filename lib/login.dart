@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'home.dart';
+import 'reset_password.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -116,7 +117,10 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20),
             TextButton(
               onPressed: () {
-                // Tambahkan navigasi ke halaman lupa password jika ada
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => const ResetPasswordScreen()),
+                );
               },
               child: const Text(
                 'Lupa Password?',
