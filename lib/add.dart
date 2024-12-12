@@ -14,16 +14,32 @@ class _AddDataScreenState extends State<AddDataScreen> {
   final _formKey = GlobalKey<FormState>();
   String? _selectedWasteType;
   double? _weight;
+  bool _isLoading = false;
 
   // Fungsi untuk menyimpan data ke Firestore
   Future<void> _saveData() async {
     if (_formKey.currentState!.validate() && _selectedWasteType != null) {
+      setState(() {
+        _isLoading = true;
+      });
+
       try {
         final user = FirebaseAuth.instance.currentUser;
 
+        // Periksa jika pengguna belum login
+        if (user == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Anda harus login terlebih dahulu')),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
+
         // Menyimpan data ke Firestore
         await FirebaseFirestore.instance.collection('wasteData').add({
-          'userId': user?.uid,
+          'userId': user.uid,
           'wasteType': _selectedWasteType,
           'weight': _weight,
           'timestamp': FieldValue.serverTimestamp(),
@@ -44,6 +60,10 @@ class _AddDataScreenState extends State<AddDataScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Terjadi kesalahan: $e')),
         );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -107,9 +127,15 @@ class _AddDataScreenState extends State<AddDataScreen> {
 
               // Tombol Simpan
               ElevatedButton(
-                onPressed: _saveData,
-                child: const Text('Simpan'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                onPressed: _isLoading
+                    ? null
+                    : _saveData,
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green), // Disable button saat loading
+                child: _isLoading
+                    ? const CircularProgressIndicator(
+                        color: Colors.white,
+                      )
+                    : const Text('Simpan'),
               ),
             ],
           ),

@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'add.dart'; // Impor halaman AddDataScreen
+import 'package:syncfusion_flutter_charts/charts.dart';
+import 'add.dart';
 import 'profile.dart';
-import 'customer.dart'; // Impor halaman customer.dart
+import 'customer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,9 +16,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   double totalWeight = 0;
   int totalSampah = 0;
-  Map<String, int> wasteCount = {'Organik': 0, 'Anorganik': 0};
+  Map<String, double> wasteCount = {'Organik': 0.0, 'Anorganik': 0.0};
 
-  // Data rute pengambilan sampah hari ini (contoh data statis)
   final List<Map<String, String>> routes = [
     {"route": "Jalan Merdeka", "time": "08:00 AM"},
     {"route": "Jalan Sudirman", "time": "10:00 AM"},
@@ -30,25 +30,24 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchStats();
   }
 
-  // Mengambil statistik sampah dari Firestore
   Future<void> _fetchStats() async {
     final snapshot =
         await FirebaseFirestore.instance.collection('wasteData').get();
 
     double weight = 0;
     int sampahCount = 0;
-    Map<String, int> count = {'Organik': 0, 'Anorganik': 0};
+    Map<String, double> count = {'Organik': 0.0, 'Anorganik': 0.0};
 
-    snapshot.docs.forEach((doc) {
-      double docWeight = doc['weight']?.toDouble() ?? 0;
+    for (var doc in snapshot.docs) {
+      double docWeight = doc['weight']?.toDouble() ?? 0.0;
       weight += docWeight;
       sampahCount++;
 
       String wasteType = doc['wasteType'] ?? '';
       if (count.containsKey(wasteType)) {
-        count[wasteType] = count[wasteType]! + 1;
+        count[wasteType] = count[wasteType]! + 1.0;
       }
-    });
+    }
 
     setState(() {
       totalWeight = weight;
@@ -63,19 +62,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Menyusun widget untuk tampilan menu
   static final List<Widget> _widgetOptions = <Widget>[
-    const HomeContent(), // Halaman Home
-    const AddDataScreen(), // Halaman AddDataScreen
-    const CustomerScreen(), // Halaman Customer
-    const ProfileScreen(), // Halaman Profile
+    const HomeContent(),
+    const AddDataScreen(),
+    const CustomerScreen(),
+    const ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _widgetOptions[
-          _selectedIndex], // Menampilkan widget sesuai pilihan BottomNavigationBar
+      body: _widgetOptions[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -108,13 +105,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        backgroundColor: Colors.green, // Background hijau
-        selectedItemColor: Colors.white, // Warna ikon yang dipilih putih
-        unselectedItemColor:
-            Colors.black, // Warna ikon yang tidak dipilih hitam
+        backgroundColor: Colors.green,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
         onTap: _onItemTapped,
-        type: BottomNavigationBarType
-            .fixed, // Untuk mengatur ikon tetap pada posisi
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
@@ -125,14 +120,13 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Ambil instance dari _HomeScreenState untuk mengakses statistik
     final _HomeScreenState homeState =
         context.findAncestorStateOfType<_HomeScreenState>()!;
 
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Statistik Sampah
+          // Statistik Sampah dengan Pie Chart
           Container(
             padding: const EdgeInsets.all(16.0),
             color: Colors.green[200],
@@ -144,22 +138,51 @@ class HomeContent extends StatelessWidget {
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _statCard('Total Sampah', homeState.totalSampah.toString()),
-                    _statCard('Total Berat (kg)',
-                        homeState.totalWeight.toStringAsFixed(2)),
+                // Pie chart untuk jenis sampah (Organik vs Anorganik)
+                SfCircularChart(
+                  legend: Legend(isVisible: true),
+                  series: <CircularSeries>[
+                    PieSeries<MapEntry<String, double>, String>(
+                      dataSource: homeState.wasteCount.entries.toList(),
+                      xValueMapper: (MapEntry<String, double> data, _) =>
+                          data.key,
+                      yValueMapper: (MapEntry<String, double> data, _) =>
+                          data.value,
+                      dataLabelSettings: const DataLabelSettings(isVisible: true),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _statCard(
-                        'Organik', homeState.wasteCount['Organik'].toString()),
-                    _statCard('Anorganik',
-                        homeState.wasteCount['Anorganik'].toString()),
+                // Menampilkan statistik sampah secara numerik
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     _statCard('Total Sampah', homeState.totalSampah.toString()),
+                //     _statCard(
+                //         'Total Berat (kg)',
+                //         homeState.totalWeight
+                //             .toStringAsFixed(2)), // Two decimal points
+                //   ],
+                // ),
+                const SizedBox(height: 20),
+                // Grafik Batang untuk Menampilkan Total Berat Sampah
+                SfCartesianChart(
+                  primaryXAxis: CategoryAxis(),
+                  series: <ChartSeries>[
+                    BarSeries<Map<String, dynamic>, String>(
+                      dataSource: [
+                        {
+                          "category": "Total Berat",
+                          "value": homeState.totalWeight.toDouble()
+                        }
+                      ],
+                      xValueMapper: (Map<String, dynamic> data, _) =>
+                          data['category']!,
+                      yValueMapper: (Map<String, dynamic> data, _) =>
+                          data['value']!,
+                      color: Colors.green,
+                      dataLabelSettings: const DataLabelSettings(isVisible: true),
+                    ),
                   ],
                 ),
               ],
@@ -167,7 +190,7 @@ class HomeContent extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Rute Pengambilan Sampah Hari Ini
+          // Grafik Bar untuk Rute Pengambilan Sampah
           Container(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -178,9 +201,15 @@ class HomeContent extends StatelessWidget {
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                ...homeState.routes
-                    .map((route) => _routeCard(route['route']!, route['time']!))
-                    .toList(),
+                ...homeState.routes.map((route) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      'Rute: ${route['route']} - Waktu: ${route['time']}',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  );
+                }),
               ],
             ),
           ),
@@ -205,30 +234,6 @@ class HomeContent extends StatelessWidget {
             Text(
               value,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _routeCard(String route, String time) {
-    return Card(
-      color: Colors.grey[100],
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              route,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              time,
-              style: const TextStyle(fontSize: 16, color: Colors.green),
             ),
           ],
         ),
