@@ -148,7 +148,8 @@ class HomeContent extends StatelessWidget {
                           data.key,
                       yValueMapper: (MapEntry<String, double> data, _) =>
                           data.value,
-                      dataLabelSettings: const DataLabelSettings(isVisible: true),
+                      dataLabelSettings:
+                          const DataLabelSettings(isVisible: true),
                     ),
                   ],
                 ),
@@ -181,7 +182,8 @@ class HomeContent extends StatelessWidget {
                       yValueMapper: (Map<String, dynamic> data, _) =>
                           data['value']!,
                       color: Colors.green,
-                      dataLabelSettings: const DataLabelSettings(isVisible: true),
+                      dataLabelSettings:
+                          const DataLabelSettings(isVisible: true),
                     ),
                   ],
                 ),
