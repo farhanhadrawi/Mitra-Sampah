@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class SelectLocationScreen extends StatefulWidget {
   final LatLng? initialLocation;
@@ -16,7 +17,7 @@ class SelectLocationScreen extends StatefulWidget {
 }
 
 class _SelectLocationScreenState extends State<SelectLocationScreen> {
-  LatLng? _selectedLocation; // Lokasi yang dipilih
+  LatLng? _selectedLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -25,32 +26,37 @@ class _SelectLocationScreenState extends State<SelectLocationScreen> {
         title: const Text('Pilih Lokasi'),
         backgroundColor: Colors.green,
       ),
-      body: GoogleMap(
-        mapType: MapType.normal,
-        onTap: (location) {
-          setState(() {
-            _selectedLocation = location;
-          });
-        },
-        markers: _selectedLocation != null
-            ? {
-                Marker(
-                  markerId: const MarkerId('selected-location'),
-                  position: _selectedLocation!,
-                )
-              }
-            : {},
-        initialCameraPosition: CameraPosition(
-          target: widget.initialLocation ??
-              const LatLng(-6.2, 106.8), // Default lokasi (Jakarta)
-          zoom: 15,
+      body: FlutterMap(
+        options: MapOptions(
+          initialCenter:
+              LatLng(-1.609972, 103.607254), // Center the map over London
+          initialZoom: 9.2,
         ),
+        children: [
+          TileLayer(
+            // Bring your own tiles
+            urlTemplate:
+                'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // For demonstration only
+            userAgentPackageName: 'com.example.app', // Add your app identifier
+            // And many more recommended properties!
+          ),
+          RichAttributionWidget(
+            // Include a stylish prebuilt attribution widget that meets all requirments
+            attributions: [
+              TextSourceAttribution(
+                'OpenStreetMap contributors',
+
+                // onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')), // (external)
+              ),
+              // Also add images...
+            ],
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (_selectedLocation != null) {
-            widget.onLocationSelected(
-                _selectedLocation!); // Kirim lokasi terpilih
+            widget.onLocationSelected(_selectedLocation!);
             Navigator.pop(context);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(

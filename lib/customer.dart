@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'select_location_screen.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'select_location_page.dart';
+import 'package:latlong2/latlong.dart';
 
 class CustomerScreen extends StatefulWidget {
   const CustomerScreen({super.key});
@@ -258,7 +260,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => SelectLocationScreen(
-                              initialLocation: selectedLocation,
+                              initialLocation:
+                                  const LatLng(-1.609972, 103.607254),
                               onLocationSelected: (location) {
                                 setState(() {
                                   selectedLocation =

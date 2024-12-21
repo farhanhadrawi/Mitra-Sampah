@@ -82,6 +82,7 @@ flutter:
     - assets/profile.png
     - assets/gogreen.png
     - assets/arrow-left.png
+    - assets/public-relation.png
     # - assets/profile_picture.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
