@@ -1,113 +1,187 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-class SelectLocationPage extends StatefulWidget {
-  final String customerId;
+class LocationPickerDialog extends StatefulWidget {
+  final LatLng? initialLocation; // Tambah parameter untuk lokasi awal
 
-  const SelectLocationPage({Key? key, required this.customerId})
-      : super(key: key);
+  const LocationPickerDialog({
+    Key? key,
+    this.initialLocation,
+  }) : super(key: key);
 
   @override
-  _SelectLocationPageState createState() => _SelectLocationPageState();
+  _LocationPickerDialogState createState() => _LocationPickerDialogState();
 }
 
-class _SelectLocationPageState extends State<SelectLocationPage> {
-  GoogleMapController? _mapController;
-  LatLng? _selectedLocation;
+class _LocationPickerDialogState extends State<LocationPickerDialog> {
+  LatLng? selectedLocation;
+  final MapController mapController = MapController();
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Gunakan initial location jika ada, jika tidak baru get current location
+    if (widget.initialLocation != null) {
+      selectedLocation = widget.initialLocation;
+      // Delay diperlukan untuk memastikan map sudah ter-render
+      Future.delayed(Duration(milliseconds: 100), () {
+        mapController.move(widget.initialLocation!, 15.0);
+      });
+    } else {
+      _getCurrentLocation();
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        Position position = await Geolocator.getCurrentPosition();
+        setState(() {
+          selectedLocation = LatLng(position.latitude, position.longitude);
+          mapController.move(selectedLocation!, 15.0);
+        });
+      }
+    } catch (e) {
+      print("Error getting location: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not get current location')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pilih Lokasi'),
-        backgroundColor: Colors.green,
-      ),
-      body: Stack(
+    return Dialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          GoogleMap(
-            onMapCreated: (controller) {
-              _mapController = controller;
-            },
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(-6.2088, 106.8456), // Lokasi awal (Jakarta)
-              zoom: 12.0,
-            ),
-            myLocationEnabled: true,
-            onTap: (LatLng position) {
-              setState(() {
-                _selectedLocation = position;
-              });
-            },
-            markers: _selectedLocation != null
-                ? {
-                    Marker(
-                      markerId: const MarkerId('selectedLocation'),
-                      position: _selectedLocation!,
+          Stack(
+            children: [
+              Container(
+                height: 400,
+                width: 600,
+                child: FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                    initialCenter: selectedLocation ??
+                        widget.initialLocation ??
+                        LatLng(-6.200000, 106.816666),
+                    initialZoom: 15.0,
+                    onTap: (tapPosition, point) {
+                      setState(() {
+                        selectedLocation = point;
+                      });
+                    },
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.app',
                     ),
-                  }
-                : {},
-          ),
-          if (_selectedLocation == null)
-            Positioned(
-              bottom: 50,
-              left: 20,
-              right: 20,
-              child: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(8.0),
-                child: const Text(
-                  'Ketuk pada peta untuk memilih lokasi.',
-                  style: TextStyle(fontSize: 16),
+                    if (selectedLocation != null)
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            width: 40.0,
+                            height: 40.0,
+                            point: selectedLocation!,
+                            child: Icon(
+                              Icons.location_pin,
+                              color: Colors.red,
+                              size: 40,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
                 ),
               ),
+              // Current Location Button
+              Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  heroTag: 'locationButton',
+                  mini: true,
+                  backgroundColor: Colors.white,
+                  onPressed: isLoading ? null : _getCurrentLocation,
+                  child: isLoading
+                      ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Icon(
+                          Icons.my_location,
+                          color: Colors.blue,
+                        ),
+                ),
+              ),
+              // Coordinates display
+              Positioned(
+                left: 16,
+                bottom: 16,
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: selectedLocation != null
+                      ? Text(
+                          '${selectedLocation!.latitude.toStringAsFixed(4)}, '
+                          '${selectedLocation!.longitude.toStringAsFixed(4)}',
+                          style: TextStyle(fontSize: 12),
+                        )
+                      : Text('Pilih lokasi'),
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Batal'),
+                ),
+                TextButton(
+                  onPressed: selectedLocation != null
+                      ? () => Navigator.pop(context, selectedLocation)
+                      : null,
+                  child: Text('Pilih'),
+                ),
+              ],
             ),
+          ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _selectedLocation == null
-            ? null
-            : () {
-                _saveLocationToFirebase();
-              },
-        label: const Text('Simpan Lokasi'),
-        icon: const Icon(Icons.save),
-        backgroundColor:
-            _selectedLocation != null ? Colors.green : Colors.grey,
-      ),
     );
-  }
-
-  Future<void> _saveLocationToFirebase() async {
-    if (_selectedLocation == null) return;
-
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final uid = "your-user-id"; // Ganti dengan UID pengguna yang valid
-
-      // Simpan lokasi ke Firebase
-      await firestore
-          .collection('users')
-          .doc(uid)
-          .collection('customers')
-          .doc(widget.customerId)
-          .update({
-        'location': {
-          'latitude': _selectedLocation!.latitude,
-          'longitude': _selectedLocation!.longitude,
-        },
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lokasi berhasil disimpan!')),
-      );
-
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan lokasi: $e')),
-      );
-    }
   }
 }
