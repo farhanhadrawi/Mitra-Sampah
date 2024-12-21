@@ -81,13 +81,14 @@ class _AddDataScreenState extends State<AddDataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tambah Sampah'),
-        backgroundColor: Colors.green,
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Tambah Sampah'),
+      //   backgroundColor: Colors.green,
+      // ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.only(
+              top: 40.0, left: 16.0, right: 16.0, bottom: 16.0),
           child: Form(
             key: _formKey,
             child: Column(

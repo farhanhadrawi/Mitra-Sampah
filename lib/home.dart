@@ -119,6 +119,7 @@ class HomeContent extends StatelessWidget {
         context.findAncestorStateOfType<_HomeScreenState>()!;
 
     return Container(
+      padding: const EdgeInsets.only(top: 30.0),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.green, Colors.greenAccent],
@@ -131,7 +132,8 @@ class HomeContent extends StatelessWidget {
           children: [
             // Grafik Perbandingan Sampah + Total Berat
             Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.only(
+                  top: 30.0, left: 16.0, right: 16.0, bottom: 16.0),
               margin: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -148,7 +150,7 @@ class HomeContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Text(
-                    'Perbandingan Sampah',
+                    'Berat Sampah',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
