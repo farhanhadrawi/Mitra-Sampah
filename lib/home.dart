@@ -1,6 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'add.dart';
 import 'profile.dart';
 import 'customer.dart';
@@ -17,6 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double totalWeight = 0;
   int totalSampah = 0;
   Map<String, double> wasteCount = {'Organik': 0.0, 'Anorganik': 0.0};
+  double selectedWeight = 0;
 
   final List<Map<String, String>> routes = [
     {"route": "Jalan Merdeka", "time": "08:00 AM"},
@@ -45,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       String wasteType = doc['wasteType'] ?? '';
       if (count.containsKey(wasteType)) {
-        count[wasteType] = count[wasteType]! + 1.0;
+        count[wasteType] = count[wasteType]! + docWeight;
       }
     }
 
@@ -53,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
       totalWeight = weight;
       totalSampah = sampahCount;
       wasteCount = count;
+      selectedWeight = weight; // Default: total semua sampah
     });
   }
 
@@ -76,37 +78,29 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/home.png',
-              color: _selectedIndex == 0 ? Colors.white : Colors.black,
-            ),
+            icon: Icon(Icons.home,
+                color: _selectedIndex == 0 ? Colors.green : Colors.black),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/add.png',
-              color: _selectedIndex == 1 ? Colors.white : Colors.black,
-            ),
+            icon: Icon(Icons.add_circle,
+                color: _selectedIndex == 1 ? Colors.green : Colors.black),
             label: 'Tambah Data',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/add.png',
-              color: _selectedIndex == 2 ? Colors.white : Colors.black,
-            ),
+            icon: Icon(Icons.people,
+                color: _selectedIndex == 2 ? Colors.green : Colors.black),
             label: 'Pelanggan',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/profile.png',
-              color: _selectedIndex == 3 ? Colors.white : Colors.black,
-            ),
+            icon: Icon(Icons.person,
+                color: _selectedIndex == 3 ? Colors.green : Colors.black),
             label: 'Profil',
           ),
         ],
         currentIndex: _selectedIndex,
-        backgroundColor: Colors.green,
-        selectedItemColor: Colors.white,
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.green,
         unselectedItemColor: Colors.black,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
@@ -123,119 +117,137 @@ class HomeContent extends StatelessWidget {
     final _HomeScreenState homeState =
         context.findAncestorStateOfType<_HomeScreenState>()!;
 
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          // Statistik Sampah dengan Pie Chart
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            color: Colors.green[200],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Statistik Sampah',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                // Pie chart untuk jenis sampah (Organik vs Anorganik)
-                SfCircularChart(
-                  legend: Legend(isVisible: true),
-                  series: <CircularSeries>[
-                    PieSeries<MapEntry<String, double>, String>(
-                      dataSource: homeState.wasteCount.entries.toList(),
-                      xValueMapper: (MapEntry<String, double> data, _) =>
-                          data.key,
-                      yValueMapper: (MapEntry<String, double> data, _) =>
-                          data.value,
-                      dataLabelSettings:
-                          const DataLabelSettings(isVisible: true),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Menampilkan statistik sampah secara numerik
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     _statCard('Total Sampah', homeState.totalSampah.toString()),
-                //     _statCard(
-                //         'Total Berat (kg)',
-                //         homeState.totalWeight
-                //             .toStringAsFixed(2)), // Two decimal points
-                //   ],
-                // ),
-                const SizedBox(height: 20),
-                // Grafik Batang untuk Menampilkan Total Berat Sampah
-                SfCartesianChart(
-                  primaryXAxis: CategoryAxis(),
-                  series: <ChartSeries>[
-                    BarSeries<Map<String, dynamic>, String>(
-                      dataSource: [
-                        {
-                          "category": "Total Berat",
-                          "value": homeState.totalWeight.toDouble()
-                        }
-                      ],
-                      xValueMapper: (Map<String, dynamic> data, _) =>
-                          data['category']!,
-                      yValueMapper: (Map<String, dynamic> data, _) =>
-                          data['value']!,
-                      color: Colors.green,
-                      dataLabelSettings:
-                          const DataLabelSettings(isVisible: true),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Grafik Bar untuk Rute Pengambilan Sampah
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Rute Pengambilan Sampah Hari Ini',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                ...homeState.routes.map((route) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      'Rute: ${route['route']} - Waktu: ${route['time']}',
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
-        ],
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.green, Colors.greenAccent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
-    );
-  }
-
-  Widget _statCard(String title, String value) {
-    return Card(
-      color: Colors.white,
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView(
         child: Column(
           children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            // Grafik Perbandingan Sampah + Total Berat
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              margin: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Perbandingan Sampah',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  SfCircularChart(
+                    legend: Legend(
+                        isVisible: true, position: LegendPosition.bottom),
+                    series: <CircularSeries>[
+                      PieSeries<MapEntry<String, double>, String>(
+                        dataSource: homeState.wasteCount.entries.toList(),
+                        xValueMapper: (MapEntry<String, double> data, _) =>
+                            data.key,
+                        yValueMapper: (MapEntry<String, double> data, _) =>
+                            data.value,
+                        dataLabelSettings:
+                            const DataLabelSettings(isVisible: true),
+                        pointColorMapper: (MapEntry<String, double> data, _) {
+                          if (data.key == 'Organik') {
+                            return Colors.green;
+                          } else {
+                            return Colors.blue;
+                          }
+                        },
+                        onPointTap: (ChartPointDetails details) {
+                          String selectedType =
+                              details.pointIndex == 0 ? 'Organik' : 'Anorganik';
+                          homeState.setState(() {
+                            homeState.selectedWeight =
+                                homeState.wasteCount[selectedType] ?? 0;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Total Berat Sampah
+                  Column(
+                    children: [
+                      const Text(
+                        'Total Berat Sampah',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${homeState.selectedWeight.toStringAsFixed(0)} kg',
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+            // Rute Pengambilan Sampah
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              margin: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Rute Pengambilan Sampah Hari Ini',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  ...homeState.routes.map((route) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.location_on, color: Colors.green),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '${route['route']} - ${route['time']}',
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
             ),
           ],
         ),
