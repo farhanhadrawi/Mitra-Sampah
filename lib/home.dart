@@ -5,6 +5,7 @@ import 'add.dart';
 import 'profile.dart';
 import 'customer.dart';
 
+// COlorado
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 

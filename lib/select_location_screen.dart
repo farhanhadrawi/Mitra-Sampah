@@ -29,7 +29,7 @@ class _SelectLocationScreenState extends State<SelectLocationScreen> {
       body: FlutterMap(
         options: const MapOptions(
           initialCenter:
-              LatLng(51.509364, -0.128928), // Center the map over London
+              LatLng(-1.609972, 103.607254), // Center the map over London
           initialZoom: 9.2,
         ),
         children: [
@@ -45,6 +45,7 @@ class _SelectLocationScreenState extends State<SelectLocationScreen> {
             attributions: [
               TextSourceAttribution(
                 'OpenStreetMap contributors',
+
                 // onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')), // (external)
               ),
               // Also add images...

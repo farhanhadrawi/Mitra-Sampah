@@ -260,7 +260,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                           MaterialPageRoute(
                             builder: (context) => SelectLocationScreen(
                               initialLocation:
-                                  const LatLng(51.509364, -0.128928),
+                                  const LatLng(-1.609972, 103.607254),
                               onLocationSelected: (location) {
                                 setState(() {
                                   selectedLocation =
