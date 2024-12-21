@@ -269,7 +269,7 @@ class _AddDataScreenState extends State<AddDataScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                SizedBox(
+                const SizedBox(
                   width: double.infinity,
                 ),
                 SizedBox(

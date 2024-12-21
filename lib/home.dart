@@ -135,7 +135,7 @@ class HomeContent extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 6,
@@ -213,7 +213,7 @@ class HomeContent extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 6,
@@ -234,7 +234,7 @@ class HomeContent extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Row(
                         children: [
-                          Icon(Icons.location_on, color: Colors.green),
+                          const Icon(Icons.location_on, color: Colors.green),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(

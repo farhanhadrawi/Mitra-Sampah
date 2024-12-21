@@ -7,9 +7,9 @@ class LocationPickerDialog extends StatefulWidget {
   final LatLng? initialLocation; // Tambah parameter untuk lokasi awal
 
   const LocationPickerDialog({
-    Key? key,
+    super.key,
     this.initialLocation,
-  }) : super(key: key);
+  });
 
   @override
   _LocationPickerDialogState createState() => _LocationPickerDialogState();
@@ -27,7 +27,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
     if (widget.initialLocation != null) {
       selectedLocation = widget.initialLocation;
       // Delay diperlukan untuk memastikan map sudah ter-render
-      Future.delayed(Duration(milliseconds: 100), () {
+      Future.delayed(const Duration(milliseconds: 100), () {
         mapController.move(widget.initialLocation!, 15.0);
       });
     } else {
@@ -57,7 +57,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
     } catch (e) {
       print("Error getting location: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not get current location')),
+        const SnackBar(content: Text('Could not get current location')),
       );
     } finally {
       setState(() {
@@ -74,7 +74,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
         children: [
           Stack(
             children: [
-              Container(
+              SizedBox(
                 height: 400,
                 width: 600,
                 child: FlutterMap(
@@ -82,7 +82,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                   options: MapOptions(
                     initialCenter: selectedLocation ??
                         widget.initialLocation ??
-                        LatLng(-6.200000, 106.816666),
+                        const LatLng(-6.200000, 106.816666),
                     initialZoom: 15.0,
                     onTap: (tapPosition, point) {
                       setState(() {
@@ -103,7 +103,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                             width: 40.0,
                             height: 40.0,
                             point: selectedLocation!,
-                            child: Icon(
+                            child: const Icon(
                               Icons.location_pin,
                               color: Colors.red,
                               size: 40,
@@ -124,12 +124,12 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                   backgroundColor: Colors.white,
                   onPressed: isLoading ? null : _getCurrentLocation,
                   child: isLoading
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : Icon(
+                      : const Icon(
                           Icons.my_location,
                           color: Colors.blue,
                         ),
@@ -140,11 +140,11 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                 left: 16,
                 bottom: 16,
                 child: Container(
-                  padding: EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(4),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
                         blurRadius: 4,
@@ -155,9 +155,9 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                       ? Text(
                           '${selectedLocation!.latitude.toStringAsFixed(4)}, '
                           '${selectedLocation!.longitude.toStringAsFixed(4)}',
-                          style: TextStyle(fontSize: 12),
+                          style: const TextStyle(fontSize: 12),
                         )
-                      : Text('Pilih lokasi'),
+                      : const Text('Pilih lokasi'),
                 ),
               ),
             ],
@@ -169,13 +169,13 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Batal'),
+                  child: const Text('Batal'),
                 ),
                 TextButton(
                   onPressed: selectedLocation != null
                       ? () => Navigator.pop(context, selectedLocation)
                       : null,
-                  child: Text('Pilih'),
+                  child: const Text('Pilih'),
                 ),
               ],
             ),

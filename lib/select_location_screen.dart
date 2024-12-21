@@ -27,7 +27,7 @@ class _SelectLocationScreenState extends State<SelectLocationScreen> {
         backgroundColor: Colors.green,
       ),
       body: FlutterMap(
-        options: MapOptions(
+        options: const MapOptions(
           initialCenter:
               LatLng(51.509364, -0.128928), // Center the map over London
           initialZoom: 9.2,
@@ -40,7 +40,7 @@ class _SelectLocationScreenState extends State<SelectLocationScreen> {
             userAgentPackageName: 'com.example.app', // Add your app identifier
             // And many more recommended properties!
           ),
-          RichAttributionWidget(
+          const RichAttributionWidget(
             // Include a stylish prebuilt attribution widget that meets all requirments
             attributions: [
               TextSourceAttribution(
