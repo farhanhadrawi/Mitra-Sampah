@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Untuk Firebase Firestore
 
 class SelectLocationScreen extends StatefulWidget {
   final LatLng? initialLocation;
@@ -20,29 +19,6 @@ class SelectLocationScreen extends StatefulWidget {
 class _SelectLocationScreenState extends State<SelectLocationScreen> {
   LatLng? _selectedLocation;
 
-  void _saveLocationToFirebase(LatLng location) async {
-    try {
-      await FirebaseFirestore.instance.collection('customers').add({
-        'latitude': location.latitude,
-        'longitude': location.longitude,
-        'timestamp': Timestamp.now(),
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lokasi berhasil disimpan ke Firebase'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal menyimpan lokasi: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,7 +29,7 @@ class _SelectLocationScreenState extends State<SelectLocationScreen> {
       body: FlutterMap(
         options: MapOptions(
           initialCenter:
-              widget.initialLocation ?? LatLng(-1.609972, 103.607254),
+              widget.initialLocation ?? const LatLng(-1.609972, 103.607254),
           initialZoom: 9.2,
           onTap: (tapPosition, point) {
             setState(() {
@@ -86,9 +62,9 @@ class _SelectLocationScreenState extends State<SelectLocationScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (_selectedLocation != null) {
-            _saveLocationToFirebase(_selectedLocation!);
-            widget.onLocationSelected(_selectedLocation!);
-            Navigator.pop(context);
+            widget.onLocationSelected(
+                _selectedLocation!); // Kembalikan lokasi yang dipilih
+            Navigator.pop(context); // Tutup halaman SelectLocationScreen
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

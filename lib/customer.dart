@@ -255,21 +255,32 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     ),
                     TextButton(
                       onPressed: () async {
-                        final result = await Navigator.push(
+                        final LatLng? result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => SelectLocationScreen(
-                              initialLocation:
+                              initialLocation: selectedLocation ??
                                   const LatLng(-1.609972, 103.607254),
                               onLocationSelected: (location) {
                                 setState(() {
                                   selectedLocation =
                                       location; // Simpan lokasi yang dipilih
+                                  locationController.text =
+                                      'Lat: ${location.latitude}, Lng: ${location.longitude}';
                                 });
                               },
                             ),
                           ),
                         );
+
+                        // Jika lokasi dipilih, perbarui kontrol lokasi
+                        if (result != null) {
+                          setState(() {
+                            selectedLocation = result;
+                            locationController.text =
+                                'Lat: ${result.latitude}, Lng: ${result.longitude}';
+                          });
+                        }
                       },
                       child: Text(
                         selectedLocation == null
@@ -400,16 +411,25 @@ class _CustomerScreenState extends State<CustomerScreen> {
     try {
       if (uid == null) return;
 
+      // Pastikan `selectedLocation` sudah berisi data lokasi
+      final Map<String, dynamic> updateData = {
+        'name': nameController.text.trim(),
+        'location': locationController.text.trim(),
+        'phone': phoneController.text.trim(),
+      };
+
+      // Tambahkan latitude dan longitude jika lokasi dipilih
+      if (selectedLocation != null) {
+        updateData['latitude'] = selectedLocation!.latitude;
+        updateData['longitude'] = selectedLocation!.longitude;
+      }
+
       await firestore
           .collection('users')
           .doc(uid)
           .collection('customers')
           .doc(customerId)
-          .update({
-        'name': nameController.text.trim(),
-        'location': locationController.text.trim(),
-        'phone': phoneController.text.trim(),
-      });
+          .update(updateData);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Data pelanggan berhasil diperbarui')),
