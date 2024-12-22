@@ -703,7 +703,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 children: [
                   const Icon(Icons.person, color: Colors.blue, size: 20),
                   const SizedBox(width: 8),
-                  Text('Nama: ${customer['name']}'),
+                  Expanded(
+                    child: Text('Nama: ${customer['name']}'),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -711,7 +713,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 children: [
                   const Icon(Icons.home, color: Colors.orange, size: 20),
                   const SizedBox(width: 8),
-                  Text('Alamat: ${customer['address']}'),
+                  Expanded(
+                    child: Text('Alamat: ${customer['address']}'),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -719,7 +723,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 children: [
                   const Icon(Icons.phone, color: Colors.green, size: 20),
                   const SizedBox(width: 8),
-                  Text('Telepon: ${customer['phone']}'),
+                  Expanded(
+                    child: Text('Telepon: ${customer['phone']}'),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -727,12 +733,12 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 children: [
                   const Icon(Icons.location_on, color: Colors.red, size: 20),
                   const SizedBox(width: 8),
-                  // Menggunakan Flexible untuk membungkus teks koordinat
-                  Flexible(
+                  Expanded(
                     child: Text(
                       'Koordinat: ${customer['latitude']}, ${customer['longitude']}',
-                      overflow: TextOverflow
-                          .ellipsis, // Menambahkan overflow jika koordinat terlalu panjang
+                      softWrap: true, // Memungkinkan pembungkusan teks
+                      maxLines:
+                          2, // Membatasi hanya 2 baris (untuk koordinat yang panjang)
                     ),
                   ),
                 ],
@@ -749,13 +755,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     size: 20,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'Status Pembayaran: ${customer['isPaid'] == true ? 'Lunas' : 'Belum Lunas'}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: customer['isPaid'] == true
-                          ? Colors.green
-                          : Colors.red,
+                  Expanded(
+                    child: Text(
+                      'Status Pembayaran: ${customer['isPaid'] == true ? 'Lunas' : 'Belum Lunas'}',
+                      softWrap: true, // Memungkinkan pembungkusan teks
                     ),
                   ),
                 ],
@@ -913,7 +916,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                                           Row(
                                             children: [
                                               const Icon(Icons.home,
-                                                  size: 16, color: Colors.grey),
+                                                  size: 16, color: Colors.blue),
                                               const SizedBox(width: 8),
                                               Flexible(
                                                 child: Text(
@@ -930,7 +933,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                                           Row(
                                             children: [
                                               const Icon(Icons.location_on,
-                                                  size: 16, color: Colors.grey),
+                                                  size: 16, color: Colors.red),
                                               const SizedBox(width: 8),
                                               Flexible(
                                                 child: Text(
@@ -947,7 +950,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
                                           Row(
                                             children: [
                                               const Icon(Icons.phone,
-                                                  size: 16, color: Colors.grey),
+                                                  size: 16,
+                                                  color: Colors.green),
                                               const SizedBox(width: 8),
                                               Flexible(
                                                 child: Text(
