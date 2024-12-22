@@ -267,7 +267,7 @@ class HomeContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Rute Pengambilan Sampah Hari Ini',
+                  'Tempat Pengambilan Sampah',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 1),

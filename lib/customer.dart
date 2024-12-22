@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'select_location_screen.dart';
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 
 class CustomerScreen extends StatefulWidget {
   const CustomerScreen({super.key});
@@ -77,6 +78,37 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
       _fetchCustomers(); // Perbarui daftar pelanggan
     }
+  }
+
+  Future<LatLng> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Periksa apakah layanan lokasi diaktifkan
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw Exception('Layanan lokasi tidak diaktifkan');
+    }
+
+    // Periksa izin lokasi
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception('Izin lokasi ditolak');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception('Izin lokasi ditolak secara permanen');
+    }
+
+    // Dapatkan lokasi saat ini
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    return LatLng(position.latitude, position.longitude);
   }
 
   Future<void> _fetchCustomers() async {
@@ -439,29 +471,44 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     ),
                     TextButton(
                       onPressed: () async {
-                        final LatLng? result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SelectLocationScreen(
-                              initialLocation: selectedLocation ??
-                                  const LatLng(-1.609972, 103.607254),
-                              onLocationSelected: (location) {
-                                setState(() {
-                                  selectedLocation = location;
-                                  locationController.text =
-                                      'Lat: ${location.latitude}, Lng: ${location.longitude}';
-                                });
-                              },
-                            ),
-                          ),
-                        );
+                        try {
+                          // Ambil lokasi terkini jika selectedLocation belum diatur
+                          final initialLocation =
+                              selectedLocation ?? await _getCurrentLocation();
 
-                        if (result != null) {
-                          setState(() {
-                            selectedLocation = result;
-                            locationController.text =
-                                'Lat: ${result.latitude}, Lng: ${result.longitude}';
-                          });
+                          // Navigasikan ke SelectLocationScreen
+                          final LatLng? result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SelectLocationScreen(
+                                initialLocation: initialLocation,
+                                onLocationSelected: (location) {
+                                  setState(() {
+                                    selectedLocation = location;
+                                    locationController.text =
+                                        'Lat: ${location.latitude}, Lng: ${location.longitude}';
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+
+                          // Perbarui lokasi jika result tidak null
+                          if (result != null) {
+                            setState(() {
+                              selectedLocation = result;
+                              locationController.text =
+                                  'Lat: ${result.latitude}, Lng: ${result.longitude}';
+                            });
+                          }
+                        } catch (e) {
+                          // Tangani kesalahan seperti layanan lokasi tidak aktif atau izin ditolak
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(e.toString()),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
                         }
                       },
                       child: Text(
