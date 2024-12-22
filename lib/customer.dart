@@ -685,6 +685,94 @@ class _CustomerScreenState extends State<CustomerScreen> {
     });
   }
 
+  void _showCustomerDetailsDialog(QueryDocumentSnapshot<Object?> document) {
+    // Konversi data menjadi Map<String, dynamic>
+    final Map<String, dynamic> customer =
+        document.data() as Map<String, dynamic>;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Detail Pelanggan: ${customer['name']}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.person, color: Colors.blue, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Nama: ${customer['name']}'),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.home, color: Colors.orange, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Alamat: ${customer['address']}'),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.phone, color: Colors.green, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Telepon: ${customer['phone']}'),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.red, size: 20),
+                  const SizedBox(width: 8),
+                  // Menggunakan Flexible untuk membungkus teks koordinat
+                  Flexible(
+                    child: Text(
+                      'Koordinat: ${customer['latitude']}, ${customer['longitude']}',
+                      overflow: TextOverflow
+                          .ellipsis, // Menambahkan overflow jika koordinat terlalu panjang
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    customer['isPaid'] == true
+                        ? Icons.check_circle
+                        : Icons.cancel,
+                    color:
+                        customer['isPaid'] == true ? Colors.green : Colors.red,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Status Pembayaran: ${customer['isPaid'] == true ? 'Lunas' : 'Belum Lunas'}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: customer['isPaid'] == true
+                          ? Colors.green
+                          : Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Tutup'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -737,9 +825,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
           FloatingActionButtonLocation.endFloat, // Posisi tombol di kanan bawah
 
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 15.0),
         child: Column(
           children: [
+            const SizedBox(height: 25),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -903,6 +992,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
                                               } else if (value == 'history') {
                                                 _showPaymentHistoryDialog(
                                                     customer);
+                                              } else if (value == 'details') {
+                                                _showCustomerDetailsDialog(
+                                                    customer); // Fungsi baru untuk menampilkan detail
                                               }
                                             },
                                             itemBuilder: (context) => [
@@ -917,6 +1009,11 @@ class _CustomerScreenState extends State<CustomerScreen> {
                                               const PopupMenuItem(
                                                 value: 'history',
                                                 child: Text('Riwayat'),
+                                              ),
+                                              const PopupMenuItem(
+                                                value: 'details',
+                                                child: Text(
+                                                    'Detail'), // Tombol baru
                                               ),
                                             ],
                                           ),
