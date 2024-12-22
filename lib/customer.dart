@@ -21,6 +21,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
   final TextEditingController searchController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
 
   List<QueryDocumentSnapshot>? allCustomers; // Semua pelanggan dari Firestore
@@ -125,9 +126,11 @@ class _CustomerScreenState extends State<CustomerScreen> {
     try {
       await firestore.collection('users').doc(uid).collection('customers').add({
         'name': nameController.text.trim(),
-        'location': locationController.text.trim(),
+        'address': addressController.text.trim(),
+        'latitude': selectedLocation!.latitude,
+        'longitude': selectedLocation!.longitude,
         'phone': phoneController.text.trim(),
-        'isPaid': false, // Field baru
+        'isPaid': false,
         'createdAt': Timestamp.now(),
       });
 
@@ -139,6 +142,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
       nameController.clear();
       locationController.clear();
       phoneController.clear();
+      addressController.clear();
+      selectedLocation = null;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal menambahkan pelanggan: $e')),
@@ -250,8 +255,13 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     ),
                     const SizedBox(height: 10),
                     TextField(
+                      controller: addressController,
+                      decoration: const InputDecoration(labelText: 'Alamat'),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
                       controller: locationController,
-                      decoration: const InputDecoration(labelText: 'Lokasi'),
+                      decoration: const InputDecoration(labelText: 'Koodinat'),
                     ),
                     TextButton(
                       onPressed: () async {
@@ -284,7 +294,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                       },
                       child: Text(
                         selectedLocation == null
-                            ? "Pilih Lokasi di Peta"
+                            ? "Pilih Lokasi (Koordinat)"
                             : "Lat: ${selectedLocation!.latitude}, Lng: ${selectedLocation!.longitude}",
                         style: const TextStyle(color: Colors.green),
                       ),
@@ -346,8 +356,12 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
   void _showEditCustomerDialog(QueryDocumentSnapshot customer) {
     nameController.text = customer['name'];
-    locationController.text = customer['location'];
+    addressController.text = customer['address'];
     phoneController.text = customer['phone'];
+    selectedLocation = LatLng(
+      customer['latitude'],
+      customer['longitude'],
+    );
 
     showDialog(
       context: context,
@@ -678,7 +692,11 @@ class _CustomerScreenState extends State<CustomerScreen> {
                                 ),
                                 title: Text(customer['name']),
                                 subtitle: Text(
-                                    '${customer['location']} \n${customer['phone']}'),
+                                    'Alamat: ${customer['address']}\n'
+                                    'Koordinat: ${customer['latitude']}, ${customer['longitude']}\n'
+                                    'Telepon: ${customer['phone']}\n'
+                                    // 'Status: ${customer.data().containsKey('isPaid') && customer['isPaid'] ? "Lunas" : "Belum Lunas"}',
+                                    ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [

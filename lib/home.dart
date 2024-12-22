@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'add.dart';
 import 'profile.dart';
 import 'customer.dart';
 
-// COlorado
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -19,17 +20,13 @@ class _HomeScreenState extends State<HomeScreen> {
   int totalSampah = 0;
   Map<String, double> wasteCount = {'Organik': 0.0, 'Anorganik': 0.0};
   double selectedWeight = 0;
-
-  final List<Map<String, String>> routes = [
-    {"route": "Jalan Merdeka", "time": "08:00 AM"},
-    {"route": "Jalan Sudirman", "time": "10:00 AM"},
-    {"route": "Jalan Thamrin", "time": "01:00 PM"},
-  ];
+  List<Map<String, dynamic>> customerLocations = [];
 
   @override
   void initState() {
     super.initState();
     _fetchStats();
+    _fetchCustomerLocations();
   }
 
   Future<void> _fetchStats() async {
@@ -59,21 +56,49 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _fetchCustomerLocations() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc('UID_USER') // Ganti dengan ID pengguna yang sesuai
+          .collection('customers')
+          .get();
+
+      List<Map<String, dynamic>> locations = snapshot.docs.map((doc) {
+        return {
+          'name': doc['name'],
+          'latitude': doc['latitude'],
+          'longitude': doc['longitude'],
+        };
+      }).toList();
+
+      setState(() {
+        customerLocations = locations;
+      });
+    } catch (e) {
+      print('Error fetching locations: $e');
+    }
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  static final List<Widget> _widgetOptions = <Widget>[
-    const HomeContent(),
-    const AddDataScreen(),
-    const CustomerScreen(),
-    const ProfileScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _widgetOptions = [
+      HomeContent(
+        wasteCount: wasteCount,
+        selectedWeight: selectedWeight,
+        customerLocations: customerLocations,
+      ),
+      const AddDataScreen(),
+      const CustomerScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       body: _widgetOptions[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -111,149 +136,133 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class HomeContent extends StatelessWidget {
-  const HomeContent({super.key});
+  final Map<String, double> wasteCount;
+  final double selectedWeight;
+  final List<Map<String, dynamic>> customerLocations;
+
+  const HomeContent({
+    Key? key,
+    required this.wasteCount,
+    required this.selectedWeight,
+    required this.customerLocations,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final _HomeScreenState homeState =
-        context.findAncestorStateOfType<_HomeScreenState>()!;
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Bagian Statistik Sampah
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            margin: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  'Berat Sampah',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                SfCircularChart(
+                  legend:
+                      Legend(isVisible: true, position: LegendPosition.bottom),
+                  series: <CircularSeries>[
+                    PieSeries<MapEntry<String, double>, String>(
+                      dataSource: wasteCount.entries.toList(),
+                      xValueMapper: (MapEntry<String, double> data, _) =>
+                          data.key,
+                      yValueMapper: (MapEntry<String, double> data, _) =>
+                          data.value,
+                      dataLabelSettings:
+                          const DataLabelSettings(isVisible: true),
+                      pointColorMapper: (MapEntry<String, double> data, _) {
+                        if (data.key == 'Organik') {
+                          return Colors.green;
+                        } else {
+                          return Colors.blue;
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Column(
+                  children: [
+                    const Text(
+                      'Total Berat Sampah',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${selectedWeight.toStringAsFixed(0)} kg',
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
 
-    return Container(
-      padding: const EdgeInsets.only(top: 30.0),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.green, Colors.greenAccent],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Grafik Perbandingan Sampah + Total Berat
-            Container(
-              padding: const EdgeInsets.only(
-                  top: 30.0, left: 16.0, right: 16.0, bottom: 16.0),
-              margin: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Berat Sampah',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  SfCircularChart(
-                    legend: Legend(
-                        isVisible: true, position: LegendPosition.bottom),
-                    series: <CircularSeries>[
-                      PieSeries<MapEntry<String, double>, String>(
-                        dataSource: homeState.wasteCount.entries.toList(),
-                        xValueMapper: (MapEntry<String, double> data, _) =>
-                            data.key,
-                        yValueMapper: (MapEntry<String, double> data, _) =>
-                            data.value,
-                        dataLabelSettings:
-                            const DataLabelSettings(isVisible: true),
-                        pointColorMapper: (MapEntry<String, double> data, _) {
-                          if (data.key == 'Organik') {
-                            return Colors.green;
-                          } else {
-                            return Colors.blue;
-                          }
-                        },
-                        onPointTap: (ChartPointDetails details) {
-                          String selectedType =
-                              details.pointIndex == 0 ? 'Organik' : 'Anorganik';
-                          homeState.setState(() {
-                            homeState.selectedWeight =
-                                homeState.wasteCount[selectedType] ?? 0;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Total Berat Sampah
-                  Column(
-                    children: [
-                      const Text(
-                        'Total Berat Sampah',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${homeState.selectedWeight.toStringAsFixed(0)} kg',
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+          // Bagian Daftar Lokasi Pelanggan
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            margin: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
             ),
-            // Rute Pengambilan Sampah
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              margin: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Rute Pengambilan Sampah Hari Ini',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  ...homeState.routes.map((route) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.location_on, color: Colors.green),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              '${route['route']} - ${route['time']}',
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                          ),
-                        ],
-                      ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Lokasi Pelanggan',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: customerLocations.length,
+                  itemBuilder: (context, index) {
+                    final location = customerLocations[index];
+                    return ListTile(
+                      leading: const Icon(Icons.location_on, color: Colors.red),
+                      title: Text(location['name']),
+                      subtitle: Text(
+                          'Lat: ${location['latitude']}, Lng: ${location['longitude']}'),
                     );
-                  }),
-                ],
-              ),
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
