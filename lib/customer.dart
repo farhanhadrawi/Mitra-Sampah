@@ -199,7 +199,16 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
   bool _isHovered = false; // Status hover untuk animasi
 
+  void _clearCustomerFields() {
+    nameController.clear();
+    addressController.clear();
+    locationController.clear();
+    phoneController.clear();
+    selectedLocation = null;
+  }
+
   void _showAddCustomerDialog() {
+    _clearCustomerFields();
     showDialog(
       context: context,
       builder: (context) {
@@ -362,60 +371,154 @@ class _CustomerScreenState extends State<CustomerScreen> {
       customer['latitude'],
       customer['longitude'],
     );
+    locationController.text =
+        'Lat: ${customer['latitude']}, Lng: ${customer['longitude']}';
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Mitra'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Nama Mitra'),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: locationController,
-                  decoration: const InputDecoration(labelText: 'Lokasi'),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: phoneController,
-                  decoration: const InputDecoration(labelText: 'No. Handphone'),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            bool isLoading = false;
+
+            Future<void> editCustomerWithValidation() async {
+              if (nameController.text.trim().isEmpty ||
+                  addressController.text.trim().isEmpty ||
+                  locationController.text.trim().isEmpty ||
+                  phoneController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Harap isi semua bidang!'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              setState(() {
+                isLoading = true;
+              });
+
+              try {
                 await _updateCustomer(customer.id);
                 Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green, // Background hijau
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(8), // Membuat tombol lebih rapi
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Gagal memperbarui pelanggan: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              } finally {
+                setState(() {
+                  isLoading = false;
+                });
+              }
+            }
+
+            return AlertDialog(
+              title: const Text('Edit Mitra'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration:
+                          const InputDecoration(labelText: 'Nama Mitra'),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: addressController,
+                      decoration: const InputDecoration(labelText: 'Alamat'),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: locationController,
+                      decoration: const InputDecoration(labelText: 'Koordinat'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        final LatLng? result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SelectLocationScreen(
+                              initialLocation: selectedLocation ??
+                                  const LatLng(-1.609972, 103.607254),
+                              onLocationSelected: (location) {
+                                setState(() {
+                                  selectedLocation = location;
+                                  locationController.text =
+                                      'Lat: ${location.latitude}, Lng: ${location.longitude}';
+                                });
+                              },
+                            ),
+                          ),
+                        );
+
+                        if (result != null) {
+                          setState(() {
+                            selectedLocation = result;
+                            locationController.text =
+                                'Lat: ${result.latitude}, Lng: ${result.longitude}';
+                          });
+                        }
+                      },
+                      child: Text(
+                        selectedLocation == null
+                            ? "Pilih Lokasi (Koordinat)"
+                            : "Lat: ${selectedLocation!.latitude}, Lng: ${selectedLocation!.longitude}",
+                        style: const TextStyle(color: Colors.green),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: phoneController,
+                      decoration:
+                          const InputDecoration(labelText: 'No. Handphone'),
+                    ),
+                  ],
                 ),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12), // Padding tombol
               ),
-              child: const Text(
-                'Simpan',
-                style: TextStyle(color: Colors.white), // Warna teks putih
-              ),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Batal'),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(right: 10),
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : editCustomerWithValidation,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Simpan',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );

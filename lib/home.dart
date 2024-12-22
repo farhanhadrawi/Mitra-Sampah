@@ -6,6 +6,8 @@ import 'package:latlong2/latlong.dart';
 import 'add.dart';
 import 'profile.dart';
 import 'customer.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,51 +32,76 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchStats() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('wasteData').get();
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-    double weight = 0;
-    int sampahCount = 0;
-    Map<String, double> count = {'Organik': 0.0, 'Anorganik': 0.0};
+      final customersSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('customers')
+          .get();
 
-    for (var doc in snapshot.docs) {
-      double docWeight = doc['weight']?.toDouble() ?? 0.0;
-      weight += docWeight;
-      sampahCount++;
+      double totalWeightTemp = 0;
+      int totalSampahTemp = 0;
+      Map<String, double> wasteCountTemp = {'Organik': 0.0, 'Anorganik': 0.0};
 
-      String wasteType = doc['wasteType'] ?? '';
-      if (count.containsKey(wasteType)) {
-        count[wasteType] = count[wasteType]! + docWeight;
+      for (var customerDoc in customersSnapshot.docs) {
+        final wasteDataSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('customers')
+            .doc(customerDoc.id)
+            .collection('wasteData')
+            .get();
+
+        for (var wasteDoc in wasteDataSnapshot.docs) {
+          double weight = wasteDoc['weight']?.toDouble() ?? 0.0;
+          String wasteType = wasteDoc['wasteType'] ?? '';
+
+          totalWeightTemp += weight;
+          totalSampahTemp++;
+
+          if (wasteCountTemp.containsKey(wasteType)) {
+            wasteCountTemp[wasteType] = wasteCountTemp[wasteType]! + weight;
+          }
+        }
       }
-    }
 
-    setState(() {
-      totalWeight = weight;
-      totalSampah = sampahCount;
-      wasteCount = count;
-      selectedWeight = weight; // Default: total semua sampah
-    });
+      setState(() {
+        totalWeight = totalWeightTemp;
+        totalSampah = totalSampahTemp;
+        wasteCount = wasteCountTemp;
+        selectedWeight = totalWeightTemp; // Default: total semua sampah
+      });
+    } catch (e) {
+      print('Error fetching stats: $e');
+    }
   }
 
   Future<void> _fetchCustomerLocations() async {
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
       final snapshot = await FirebaseFirestore.instance
           .collection('users')
-          .doc('UID_USER') // Ganti dengan ID pengguna yang sesuai
+          .doc(user.uid)
           .collection('customers')
           .get();
 
+      // Ambil data hanya 'address'
       List<Map<String, dynamic>> locations = snapshot.docs.map((doc) {
         return {
-          'name': doc['name'],
-          'latitude': doc['latitude'],
-          'longitude': doc['longitude'],
+          'address': doc['address'],
         };
       }).toList();
 
       setState(() {
         customerLocations = locations;
       });
+
+      print('Fetched customerLocations: $customerLocations'); // Debug
     } catch (e) {
       print('Error fetching locations: $e');
     }
@@ -222,7 +249,6 @@ class HomeContent extends StatelessWidget {
             ),
           ),
 
-          // Bagian Daftar Lokasi Pelanggan
           Container(
             padding: const EdgeInsets.all(16.0),
             margin: const EdgeInsets.all(8.0),
@@ -241,7 +267,7 @@ class HomeContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Lokasi Pelanggan',
+                  'Rute Pengambilan Sampah',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
@@ -253,9 +279,8 @@ class HomeContent extends StatelessWidget {
                     final location = customerLocations[index];
                     return ListTile(
                       leading: const Icon(Icons.location_on, color: Colors.red),
-                      title: Text(location['name']),
-                      subtitle: Text(
-                          'Lat: ${location['latitude']}, Lng: ${location['longitude']}'),
+                      title:
+                          Text(location['address'] ?? 'Alamat tidak tersedia'),
                     );
                   },
                 ),

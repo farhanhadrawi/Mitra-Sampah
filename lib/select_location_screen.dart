@@ -30,7 +30,7 @@ class _SelectLocationScreenState extends State<SelectLocationScreen> {
         options: MapOptions(
           initialCenter:
               widget.initialLocation ?? const LatLng(-1.609972, 103.607254),
-          initialZoom: 9.2,
+          initialZoom: 13,
           onTap: (tapPosition, point) {
             setState(() {
               _selectedLocation = point;
