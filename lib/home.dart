@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _widgetOptions = [
+    final List<Widget> widgetOptions = [
       HomeContent(
         wasteCount: wasteCount,
         selectedWeight: selectedWeight,
@@ -127,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
-      body: _widgetOptions[_selectedIndex],
+      body: widgetOptions[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -168,11 +168,11 @@ class HomeContent extends StatelessWidget {
   final List<Map<String, dynamic>> customerLocations;
 
   const HomeContent({
-    Key? key,
+    super.key,
     required this.wasteCount,
     required this.selectedWeight,
     required this.customerLocations,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
