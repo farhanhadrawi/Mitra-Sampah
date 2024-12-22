@@ -244,58 +244,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          const SizedBox(height: 50),
-          CircleAvatar(
-            radius: 50,
-            backgroundImage: profileImageUrl != null
-                ? NetworkImage(profileImageUrl!)
-                : const AssetImage('assets/profile_picture.png')
-                    as ImageProvider,
-            child: profileImageUrl == null
-                ? const Icon(Icons.person, size: 50, color: Colors.white)
-                : null,
-          ),
+          const SizedBox(height: 40),
 
-          TextButton(
-            onPressed: _changeProfilePicture,
-            child: const Text(
-              'Ganti Foto',
-              style: TextStyle(color: Colors.green),
-            ),
+          // Profile Picture
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              CircleAvatar(
+                radius: 60,
+                backgroundImage: profileImageUrl != null
+                    ? NetworkImage(profileImageUrl!)
+                    : const AssetImage('assets/profile_picture.png')
+                        as ImageProvider,
+                child: profileImageUrl == null
+                    ? const Icon(Icons.person, size: 60, color: Colors.white)
+                    : null,
+              ),
+              // Positioned(
+              //   bottom: 5,
+              //   right: 5,
+              //   child: InkWell(
+              //     onTap: () {}, // Ganti Foto Callback
+              //     child: Container(
+              //       padding: const EdgeInsets.all(8),
+              //       decoration: BoxDecoration(
+              //         color: Colors.green,
+              //         shape: BoxShape.circle,
+              //       ),
+              //       // child: const Icon(
+              //       //   Icons.camera_alt,
+              //       //   color: Colors.white,
+              //       //   size: 20,
+              //       // ),
+              //     ),
+              //   ),
+              // ),
+            ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 40),
 
-          // TextField untuk username
-          TextField(
+          // Username Input
+          _buildInputField(
             controller: usernameController,
-            decoration: const InputDecoration(
-              labelText: 'Username',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // TextField untuk email yang diisi dari emailController
-          TextField(
-            controller: emailController,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              border: OutlineInputBorder(),
-            ),
-            readOnly: true, // Tidak dapat diubah
-          ),
-          const SizedBox(height: 10),
-
-          // TextField untuk nomor telepon
-          TextField(
-            controller: phoneController,
-            decoration: const InputDecoration(
-              labelText: 'Phone Number',
-              border: OutlineInputBorder(),
-            ),
+            label: 'Username',
+            icon: Icons.person,
           ),
           const SizedBox(height: 20),
+
+          // Email Input
+          _buildInputField(
+            controller: emailController,
+            label: 'Email',
+            icon: Icons.email,
+            isReadOnly: true,
+          ),
+          const SizedBox(height: 20),
+
+          // Phone Input
+          _buildInputField(
+            controller: phoneController,
+            label: 'Phone Number',
+            icon: Icons.phone,
+          ),
+          const SizedBox(height: 40),
+
+          // Update Profile Button
           ElevatedButton(
             onPressed: _updateUserProfile,
             style: ElevatedButton.styleFrom(
@@ -315,6 +330,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 20),
+
+          // Logout Button
           ElevatedButton(
             onPressed: signOut,
             style: ElevatedButton.styleFrom(
@@ -334,6 +351,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool isReadOnly = false,
+  }) {
+    return TextField(
+      controller: controller,
+      readOnly: isReadOnly,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.green),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        filled: true,
+        fillColor: Colors.green.shade50,
       ),
     );
   }

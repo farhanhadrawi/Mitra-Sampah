@@ -101,7 +101,7 @@ class _AddDataScreenState extends State<AddDataScreen> {
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                    color: Color.fromARGB(255, 0, 0, 0),
                   ),
                 ),
                 const SizedBox(height: 16),
