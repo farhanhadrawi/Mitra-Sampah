@@ -740,31 +740,31 @@ class _CustomerScreenState extends State<CustomerScreen> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            // Search bar
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: searchController,
-                    onChanged: _filterCustomers,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search, color: Colors.green),
-                      labelText: 'Cari Nama Mitra',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: searchController,
+                      onChanged: _filterCustomers,
+                      decoration: InputDecoration(
+                        prefixIcon:
+                            const Icon(Icons.search, color: Colors.green),
+                        labelText: 'Cari Nama Mitra',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.filter_list,
-                      color: Colors.black), // Tombol filter
-                  onPressed: _showFilterDialog, // Memanggil dialog filter
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.filter_list, color: Colors.black),
+                    onPressed: _showFilterDialog,
+                  ),
+                ],
+              ),
             ),
-
             // const SizedBox(height: 16),
 
             // Daftar pelanggan
@@ -773,75 +773,155 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   ? const Center(child: CircularProgressIndicator())
                   : filteredCustomers!.isEmpty
                       ? const Center(
-                          child: Text('Belum ada pelanggan yang ditambahkan.'),
+                          child: Text('Belum ada pelanggan yang ditambahkan.',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              )),
                         )
                       : ListView.builder(
                           itemCount: filteredCustomers!.length,
                           itemBuilder: (context, index) {
                             final customer = filteredCustomers![index];
                             return Card(
-                              elevation: 2,
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: customer['isPaid'] == true
-                                      ? Colors.green
-                                      : Colors
-                                          .red, // Warna berdasarkan status pembayaran
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                                title: Text(customer['name']),
-                                subtitle: Text(
-                                    'Alamat: ${customer['address']}\n'
-                                    'Koordinat: ${customer['latitude']}, ${customer['longitude']}\n'
-                                    'Telepon: ${customer['phone']}\n'
-                                    // 'Status: ${customer.data().containsKey('isPaid') && customer['isPaid'] ? "Lunas" : "Belum Lunas"}',
-                                    ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
+                              elevation: 4,
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
                                   children: [
-                                    IconButton(
-                                      icon: Icon(
-                                        (customer['isPaid'] ??
-                                                false) // Default value jika `isPaid` null
-                                            ? Icons.check_circle
-                                            : Icons.circle_outlined,
-                                        color: (customer['isPaid'] ?? false)
-                                            ? Colors.green
-                                            : Colors.red,
+                                    ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundColor:
+                                            customer['isPaid'] == true
+                                                ? Colors.green
+                                                : Colors.red,
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
-                                      onPressed: () async {
-                                        await _togglePaymentStatus(customer.id,
-                                            !(customer['isPaid'] ?? false));
-                                      },
-                                    ),
-                                    PopupMenuButton<String>(
-                                      onSelected: (value) async {
-                                        if (value == 'edit') {
-                                          _showEditCustomerDialog(customer);
-                                        } else if (value == 'delete') {
-                                          _deleteCustomer(customer.id);
-                                        } else if (value == 'history') {
-                                          _showPaymentHistoryDialog(customer);
-                                        }
-                                      },
-                                      itemBuilder: (context) => [
-                                        const PopupMenuItem(
-                                          value: 'edit',
-                                          child: Text('Edit'),
+                                      title: Text(
+                                        customer['name'],
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        const PopupMenuItem(
-                                          value: 'delete',
-                                          child: Text('Delete'),
-                                        ),
-                                        const PopupMenuItem(
-                                          value: 'history',
-                                          child: Text('Riwayat'),
-                                        ),
-                                      ],
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.home,
+                                                  size: 16, color: Colors.grey),
+                                              const SizedBox(width: 8),
+                                              Flexible(
+                                                child: Text(
+                                                  customer['address'],
+                                                  style: const TextStyle(
+                                                      fontSize: 14),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.location_on,
+                                                  size: 16, color: Colors.grey),
+                                              const SizedBox(width: 8),
+                                              Flexible(
+                                                child: Text(
+                                                  '${customer['latitude']}, ${customer['longitude']}',
+                                                  style: const TextStyle(
+                                                      fontSize: 14),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.phone,
+                                                  size: 16, color: Colors.grey),
+                                              const SizedBox(width: 8),
+                                              Flexible(
+                                                child: Text(
+                                                  customer['phone'],
+                                                  style: const TextStyle(
+                                                      fontSize: 14),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              (customer['isPaid'] ?? false)
+                                                  ? Icons.check_circle
+                                                  : Icons.circle_outlined,
+                                              color:
+                                                  (customer['isPaid'] ?? false)
+                                                      ? Colors.green
+                                                      : Colors.red,
+                                            ),
+                                            onPressed: () async {
+                                              await _togglePaymentStatus(
+                                                  customer.id,
+                                                  !(customer['isPaid'] ??
+                                                      false));
+                                            },
+                                          ),
+                                          PopupMenuButton<String>(
+                                            onSelected: (value) async {
+                                              if (value == 'edit') {
+                                                _showEditCustomerDialog(
+                                                    customer);
+                                              } else if (value == 'delete') {
+                                                _deleteCustomer(customer.id);
+                                              } else if (value == 'history') {
+                                                _showPaymentHistoryDialog(
+                                                    customer);
+                                              }
+                                            },
+                                            itemBuilder: (context) => [
+                                              const PopupMenuItem(
+                                                value: 'edit',
+                                                child: Text('Edit'),
+                                              ),
+                                              const PopupMenuItem(
+                                                value: 'delete',
+                                                child: Text('Delete'),
+                                              ),
+                                              const PopupMenuItem(
+                                                value: 'history',
+                                                child: Text('Riwayat'),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
