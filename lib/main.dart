@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_final_project/profile.dart';
 import 'home.dart';
 import 'firebase_options.dart';
 
@@ -116,7 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           if (_currentPage == onboardingData.length - 1)
             Positioned(
-              bottom: 20,
+              bottom: 40,
               left: 0,
               right: 0,
               child: Center(
@@ -125,12 +126,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const HomeScreen()),
+                          builder: (context) => const ProfileScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 15),
+                        horizontal: 30, vertical: 12),
                     backgroundColor: Colors.green,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
@@ -140,9 +141,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     shadowColor: Colors.greenAccent, // Warna bayangan
                   ),
                   child: const Text(
-                    "Get Started",
+                    "Mulai",
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),

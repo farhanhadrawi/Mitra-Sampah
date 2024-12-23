@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.people,
                 color: _selectedIndex == 2 ? Colors.green : Colors.black),
-            label: 'Pelanggan',
+            label: 'Mitra',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person,
@@ -197,6 +197,7 @@ class HomeContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                const SizedBox(height: 16),
                 const Text(
                   'Berat Sampah',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

@@ -130,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       // Arahkan ke halaman Home setelah logout
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const ProfileScreen()),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -176,7 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       height: 300,
                       decoration: const BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage('assets/gogreen.png'),
+                          image: AssetImage('assets/logo.png'),
                           fit: BoxFit.contain,
                         ),
                       ),
