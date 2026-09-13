@@ -19,24 +19,84 @@ class _LoginScreenState extends State<LoginScreen> {
   String errorMessage = '';
 
   Future<void> signIn() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    // Validasi email
+    if (email.isEmpty) {
+      setState(() {
+        errorMessage = 'Email wajib diisi';
+      });
+      return;
+    }
+
+    if (!email.contains('@')) {
+      setState(() {
+        errorMessage = 'Format email tidak valid';
+      });
+      return;
+    }
+
+    // Validasi password
+    if (password.isEmpty) {
+      setState(() {
+        errorMessage = 'Password wajib diisi';
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      setState(() {
+        errorMessage = 'Password minimal 6 karakter';
+      });
+      return;
+    }
+
+    // Proses login dengan Firebase
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
+
+      if (!mounted) return;
 
       // Jika login berhasil, tampilkan notifikasi
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login berhasil')),
+        const SnackBar(
+          content: Text('Login berhasil'),
+        ),
       );
 
       // Navigasi ke HomeScreen
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (context) => const HomeScreen(),
+        ),
       );
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        switch (e.code) {
+          case 'user-not-found':
+            errorMessage = 'Akun tidak ditemukan';
+            break;
+          case 'wrong-password':
+          case 'invalid-credential':
+            errorMessage = 'Email atau password salah';
+            break;
+          case 'invalid-email':
+            errorMessage = 'Format email tidak valid';
+            break;
+          case 'user-disabled':
+            errorMessage = 'Akun telah dinonaktifkan';
+            break;
+          default:
+            errorMessage = 'Login gagal. Silakan coba lagi';
+        }
+      });
     } catch (e) {
       setState(() {
-        errorMessage = e.toString();
+        errorMessage = 'Terjadi kesalahan. Silakan coba lagi';
       });
     }
   }
@@ -103,15 +163,20 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: signIn,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 50,
+                  vertical: 15,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
               child: const Text(
                 'Masuk',
-                style: TextStyle(fontSize: 18, color: Colors.black),
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -119,7 +184,8 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                      builder: (context) => const ResetPasswordScreen()),
+                    builder: (context) => const ResetPasswordScreen(),
+                  ),
                 );
               },
               child: const Text(
